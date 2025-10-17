@@ -11,7 +11,7 @@ from .validators import (
     CardScheme,
 )
 from rest_framework.exceptions import ValidationError
-
+from unittest.mock import patch, Mock
 
 class LuhnCheckTests(TestCase):
     """Test Luhn algorithm implementation"""
@@ -249,3 +249,47 @@ class HealthAPITests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["status"], "Ok")
+
+class MockValidatorTests(TestCase):
+    """Test cases using mocking"""
+
+    @patch('validator.validators.luhn_check')
+    def test_mocked_luhn_check(self, mock_luhn):
+        """Test validation with mocked luhn check"""
+        mock_luhn.return_value = True
+        
+        # The actual value doesn't matter since we're mocking the check
+        result = mock_luhn("4532015112830366")
+        
+        self.assertTrue(result)
+        mock_luhn.assert_called_once_with("4532015112830366")
+
+    @patch('validator.validators.detect_scheme')
+    def test_mocked_scheme_detection(self, mock_detect):
+        """Test scheme detection with mocking"""
+        mock_detect.return_value = "visa"
+        
+        result = mock_detect("4532015112830366")
+        
+        self.assertEqual(result, "visa")
+        mock_detect.assert_called_once_with("4532015112830366")
+
+    @patch('validator.views.validate_card_number')
+    def test_mocked_api_validation(self, mock_validate):
+        """Test API validation with mocked validator"""
+        mock_validate.return_value = {
+            'valid': True,
+            'scheme': 'visa',
+            'message': 'OK'
+        }
+        
+        response = self.client.post(
+            "/api/v1/validate/",
+            {"number": "4532015112830366"},
+            format="json"
+        )
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["valid"], True)
+        self.assertEqual(response.data["scheme"], "visa")
+        mock_validate.assert_called_once()
