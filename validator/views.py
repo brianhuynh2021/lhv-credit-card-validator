@@ -62,4 +62,4 @@ class HealthView(APIView):
     """
     @extend_schema(responses={200: HealthResponseSerializer})
     def get(self, request):
-        return Response({"status": "Ok"})
+        return Response({"status": "OK! Welcome to our company"})
