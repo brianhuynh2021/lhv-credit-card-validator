@@ -40,7 +40,7 @@ class ValidateView(APIView):
         scheme = detect_scheme(number)
         
         logger.info(
-            "Card validation completed",
+            f"Card validation completed | scheme={scheme} valid={is_valid} masked={mask_number_for_logging(number)} req_id={getattr(request, 'request_id', '-')}",
             extra={
                 'scheme': scheme,
                 'valid': is_valid,
@@ -54,6 +54,7 @@ class ValidateView(APIView):
             "scheme": scheme,
             "message": "OK" if is_valid else "Invalid card number"
         })
+
 class HealthView(APIView):
     """
     GET /health
